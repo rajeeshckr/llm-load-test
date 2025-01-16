@@ -62,11 +62,11 @@ def initialize_dataset(
     with open(filename, "r", encoding="utf-8") as file:
         total_queries = 0
 
-        # [1:] to skip the first line, it contains metadata
-        lines = file.readlines()[1:]
+        lines = file.readlines()
         random.Random(dataset_seed).shuffle(lines)
 
         for line in lines:
+            logging.debug("Processing line %s", line)
             # Load each line as a JSON object
             try:
                 json_object = json.loads(line.strip())
@@ -76,8 +76,7 @@ def initialize_dataset(
             try:
                 input_tokens = int(json_object["tok_input_length"])
                 output_tokens = int(json_object["tok_output_length"])
-                prompt = json_object["question"]
-                system_prompt = json_object["system_prompt"]
+                prompt = json_object["payload"]
                 input_id = json_object["index"]
             except KeyError as e:
                 logging.error(
@@ -94,8 +93,7 @@ def initialize_dataset(
                                                     max_sequence_tokens)
             if (token_lengths_ok):
                 input_data = {
-                    "text": prompt_format.format(prompt=prompt,
-                                                 system_prompt=system_prompt),
+                    "text": prompt,
                     "input_id": input_id,
                     "input_tokens": input_tokens,
                     "output_tokens": output_tokens,

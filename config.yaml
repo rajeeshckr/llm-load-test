@@ -5,7 +5,7 @@ output:
 storage: # TODO
   type: local
 dataset:
-  file: "datasets/openorca_large_subset_011.jsonl"
+  file: "datasets/ems.jsonl"
   max_queries: 1000
   min_input_tokens: 0
   max_input_tokens: 1024
@@ -16,14 +16,10 @@ dataset:
 load_options:
   type: constant #Future options: loadgen, stair-step
   concurrency: 1 # can also be a list [1,2,4]
-  duration: 20 # In seconds. Maybe in future support "100s" "10m", etc...
-plugin: "openai_plugin"
+  duration: 10 # In seconds. Maybe in future support "100s" "10m", etc...
+plugin: "ems_plugin"
 plugin_options:
-  use_tls: False # Use True if querying an SSL grpc endpoint over https
-  streaming: True
-  model_name: "flan-t5-small"
-  host: "http://route.to.host"
-  endpoint: "/v1/completions"
-  authorization: "" # Set if host requires Authorization Token
+  host: "localhost:8080"
+  endpoint: "/predictions/model"
 extra_metadata:
   replicas: 1

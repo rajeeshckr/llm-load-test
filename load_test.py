@@ -26,10 +26,13 @@ def run_main_process(concurrency, duration, dataset, dataset_q, stop_q):
     current_time = start_time
     while (current_time - start_time) < duration:
         # Keep the dataset queue full for duration
-        if dataset_q.qsize() < int(0.5*concurrency + 1):
-            logging.info("Adding %d entries to dataset queue", concurrency)
-            for query in dataset.get_next_n_queries(concurrency):
-                dataset_q.put(query)
+        # qsize does not work in macOS
+        # if dataset_q.qsize() < int(0.5*concurrency + 1): 
+        #     logging.info("Adding %d entries to dataset queue", concurrency)
+        #     for query in dataset.get_next_n_queries(concurrency):
+        #         dataset_q.put(query)
+        for query in dataset.get_next_n_queries(concurrency):
+            dataset_q.put(query)
         time.sleep(0.1)
         current_time = time.time()
 
@@ -132,6 +135,7 @@ def main(args):
     try:
         config = utils.yaml_load(args.config)
         concurrency, duration, plugin = utils.parse_config(config)
+        logging.debug("Here")
     except Exception as e:
         logging.error("Exiting due to invalid input: %s", repr(e))
 
