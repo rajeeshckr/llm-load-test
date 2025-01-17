@@ -26,7 +26,7 @@ def run_main_process(concurrency, duration, dataset, dataset_q, stop_q):
     current_time = start_time
     while (current_time - start_time) < duration:
         # Keep the dataset queue full for duration
-        # qsize does not work in macOS
+        # TODO: uncomment in linux, qsize does not work in macOS
         # if dataset_q.qsize() < int(0.5*concurrency + 1): 
         #     logging.info("Adding %d entries to dataset queue", concurrency)
         #     for query in dataset.get_next_n_queries(concurrency):
@@ -43,7 +43,6 @@ def run_main_process(concurrency, duration, dataset, dataset_q, stop_q):
 
     # Empty the dataset queue
     while not dataset_q.empty():
-        logging.debug("Removing element from dataset_q")
         dataset_q.get()
 
     return
@@ -135,7 +134,6 @@ def main(args):
     try:
         config = utils.yaml_load(args.config)
         concurrency, duration, plugin = utils.parse_config(config)
-        logging.debug("Here")
     except Exception as e:
         logging.error("Exiting due to invalid input: %s", repr(e))
 
@@ -143,23 +141,19 @@ def main(args):
         stop_test(logger_q, log_reader_thread, 1)
 
     try:
-        if not isinstance(concurrency, list):
-            concurrency = [concurrency]
+        logging.debug("Creating dataset with configuration %s", config["dataset"])
+        dataset = Dataset(**config["dataset"])
 
-        for n_users in concurrency:
-            config["load_options"]["concurrency"] = n_users
-            logging.debug("Creating dataset with configuration %s", config["dataset"])
-            dataset = Dataset(**config["dataset"])
+        n_users = concurrency
+        procs, results_pipes = create_procs(mp_ctx, dataset_q, stop_q, plugin, logger_q, args.log_level, duration, n_users)
 
-            procs, results_pipes = create_procs(mp_ctx, dataset_q, stop_q, plugin, logger_q, args.log_level, duration, n_users)
+        logging.debug("Running main process")
 
-            logging.debug("Running main process")
+        run_main_process(n_users, duration, dataset, dataset_q, stop_q)
+        results_list = gather_results(results_pipes)
+        utils.write_output(config, results_list, concurrency=n_users, duration=duration)
 
-            run_main_process(n_users, duration, dataset, dataset_q, stop_q)
-            results_list = gather_results(results_pipes)
-            utils.write_output(config, results_list, concurrency=n_users, duration=duration)
-
-            stop_procs(procs, dataset_q, stop_q)
+        stop_procs(procs, dataset_q, stop_q)
 
     # Terminate queues immediately on ^C
     except KeyboardInterrupt:

@@ -66,7 +66,6 @@ def initialize_dataset(
         random.Random(dataset_seed).shuffle(lines)
 
         for line in lines:
-            logging.debug("Processing line %s", line)
             # Load each line as a JSON object
             try:
                 json_object = json.loads(line.strip())

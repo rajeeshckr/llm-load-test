@@ -53,25 +53,12 @@ class EMSPlugin(plugin.Plugin):
             if arg not in args:
                 logger.error("Missing plugin arg: %s", arg)
 
-        self.request_func = self.request_http
+        self.request_func = self.request_http # no streaming requests supported for this plugin
 
         self.host = "http://" + args.get("host") + args.get("endpoint")
 
         logger.debug("Host: %s", self.host)
         
-
-    def _process_resp(self, resp: bytes) -> Optional[dict]:
-        try:
-            _, found, data = resp.partition(b"data: ")
-            if not found:
-                return None
-            message = json.loads(data)
-            logger.debug("Message: %s", message)
-        except json.JSONDecodeError:
-            logger.exception("Response line could not be json decoded: %s", resp)
-            return None
-
-        return message
 
     def request_http(self, query: dict, user_id: int, test_end_time: float = 0):
 
@@ -83,12 +70,9 @@ class EMSPlugin(plugin.Plugin):
 
 
         logger.debug("Query: %s", query)
-        data = {"inputs":{"text":query.get("text")}}
+        data = {"inputs":{"text":query.get("text")}} # this is the format that the EMS model serving expects
         response = None
         try:
-            logger.debug("Data: %s", data)
-            logger.debug("Headers: %s", headers)
-            logger.debug("Host: %s", self.host)
             response = requests.post(self.host, headers=headers, json=data, verify=False)
             response.raise_for_status()
         except requests.exceptions.ConnectionError as err:
@@ -118,7 +102,7 @@ class EMSPlugin(plugin.Plugin):
             message = json.loads(response.text)
             error = message.get("error")
             if error is None:
-                result.output_text = response.text
+                result.output_text = "" # not storing the output text to save memory
             else:
                 result.error_code = response.status_code
                 result.error_text = error
