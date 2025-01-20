@@ -16,7 +16,7 @@ Example plugin config.yaml:
 plugin: "ems_plugin"
 plugin_options:
   # provide kubernetes service FQDN 
-  host: "model-serving-example-intents-bentoml-c0fcdc58.model-serving-ml-apac-beagle.svc.cluster.local"
+  host: "model-serving-example-text-matching-k-636af77b.model-serving-ml-apac-beagle.svc.cluster.local"
   endpoint: "/predictions/model"
 """
 

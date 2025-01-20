@@ -15,7 +15,7 @@ dataset:
   custom_prompt_format: null # Sample : "{system_prompt}\n\n{prompt}""
 load_options:
   type: constant #Future options: loadgen, stair-step
-  concurrency: 1000 # concurrency of requests by user
+  concurrency: 200 # concurrency of requests by user
   duration: 20 # In seconds. Maybe in future support "100s" "10m", etc...
 plugin: "ems_plugin"
 plugin_options:

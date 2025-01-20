@@ -134,14 +134,12 @@ def write_output(config, results_list, concurrency, duration):
         "summary": {},
     }
 
-    logging.info("Length of results: %d", len(results_list))
-
     # TODO, should this be output using logging?
     df = pd.DataFrame(results_list)
     df.head()
 
-    with pd.option_context("display.max_rows", None, "display.max_columns", None):
-        print(df)
+    # with pd.option_context("display.max_rows", None, "display.max_columns", None):
+    #     print(df)
     print(f"\n---\nFull results in {outfile}. Results summary:")
 
     error_count = len(df[~df["error_text"].isnull()])
@@ -150,33 +148,6 @@ def write_output(config, results_list, concurrency, duration):
 
     # Ignore errors for summary results
     df = df[df["error_text"].isnull()]
-
-    if "ttft" in df:
-        # Streaming
-        summary_df = df[
-            [
-                "tt_ack",
-                "ttft",
-                "itl",
-                "tpot",
-                "response_time",
-                "output_tokens",
-                "output_tokens_before_timeout",
-                "input_tokens",
-            ]
-        ].mean(numeric_only=True)
-    else:
-        # Non-streaming, no TTFT or ITL
-        summary_df = df[
-            [
-                "tpot",
-                "response_time",
-                "output_tokens",
-                "output_tokens_before_timeout",
-                "input_tokens",
-            ]
-        ].mean(numeric_only=True)
-    print(summary_df)
 
     # Only consider requests that were completed within the duration of the test for
     # calculating the summary statistics on tpot, ttft, itl, tt_ack
@@ -213,15 +184,9 @@ def write_output(config, results_list, concurrency, duration):
     true_start = df["start_time"].min()
     full_duration = true_end - true_start
     throughput_full_duration = df["output_tokens"].sum() / full_duration
-    print(
-        f"Total true throughput across all users: {throughput_full_duration} tokens / sec, for duration {full_duration}"
-    )
+    throughput_requests_per_second = len(results_list) / full_duration
 
     throughput = df["output_tokens_before_timeout"].sum() / duration
-    print(
-        f"Total throughput across all users bounded by the test duration: {throughput} tokens / sec, for duration {duration}"
-    )
-
     output_obj["summary"]["throughput_full_duration"] = throughput_full_duration
     output_obj["summary"]["full_duration"] = full_duration
     output_obj["summary"]["throughput"] = throughput
@@ -236,6 +201,16 @@ def write_output(config, results_list, concurrency, duration):
     with outfile.open("w") as f:
         f.write(json_out)
 
+    print("\n\nResponse Time Summary (in milliseconds):")
+    print(f"{'Metric':<20} {'Value (ms)':<15}")
+    print("-" * 35)
+    for key, value in output_obj["summary"]["response_time"].items():
+        print(f"{key:<20} {value:<15.2f}")
+
+    print(
+        f"\nTotal true throughput across all users: {throughput_requests_per_second} requests / sec, for duration {full_duration} seconds"
+    )
+    
 
 def get_summary(df: pd.DataFrame, output_obj: dict, summary_key: str):
     """Get the summary."""

@@ -5,6 +5,7 @@ import logging.handlers
 import multiprocessing as mp
 import sys
 import time
+import platform
 from user import User
 
 from dataset import Dataset
@@ -25,14 +26,18 @@ def run_main_process(concurrency, duration, dataset, dataset_q, stop_q):
     start_time = time.time()
     current_time = start_time
     while (current_time - start_time) < duration:
-        # Keep the dataset queue full for duration
-        # TODO: uncomment in linux, qsize does not work in macOS
-        # if dataset_q.qsize() < int(0.5*concurrency + 1): 
-        #     logging.info("Adding %d entries to dataset queue", concurrency)
-        #     for query in dataset.get_next_n_queries(concurrency):
-        #         dataset_q.put(query)
-        for query in dataset.get_next_n_queries(concurrency):
-            dataset_q.put(query)
+        # Check the operating system
+        if platform.system() == "Darwin":  # macOS
+            # For macOS, we do not check the queue size
+            logging.info("Adding %d entries to dataset queue", concurrency)
+            for query in dataset.get_next_n_queries(concurrency):
+                dataset_q.put(query)
+        else:  # Assume Linux or other OS
+            # For Linux, check the queue size before adding
+            if dataset_q.qsize() < int(0.5 * concurrency + 1):
+                logging.info("Adding %d entries to dataset queue", concurrency)
+                for query in dataset.get_next_n_queries(concurrency):
+                    dataset_q.put(query)
         time.sleep(0.1)
         current_time = time.time()
 
@@ -73,7 +78,7 @@ def stop_procs(procs, dataset_q, stop_q):
     logging.debug("Calling join() on all user processes")
     for proc in procs:
         proc.join()
-    logging.info("User processes terminated succesfully")
+    logging.debug("User processes terminated succesfully")
 
     stop_q.get()
 

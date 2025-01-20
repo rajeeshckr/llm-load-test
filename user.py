@@ -74,4 +74,4 @@ class User:
         self.results_pipe.send(self.results_list)
 
         time.sleep(4)
-        self.logger.info("User %s done", self.user_id)
+        self.logger.debug("User %s done", self.user_id)
