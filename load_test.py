@@ -29,13 +29,13 @@ def run_main_process(concurrency, duration, dataset, dataset_q, stop_q):
         # Check the operating system
         if platform.system() == "Darwin":  # macOS
             # For macOS, we do not check the queue size
-            logging.info("Adding %d entries to dataset queue", concurrency)
+            logging.debug("Adding %d entries to dataset queue", concurrency)
             for query in dataset.get_next_n_queries(concurrency):
                 dataset_q.put(query)
         else:  # Assume Linux or other OS
             # For Linux, check the queue size before adding
             if dataset_q.qsize() < int(0.5 * concurrency + 1):
-                logging.info("Adding %d entries to dataset queue", concurrency)
+                logging.debug("Adding %d entries to dataset queue", concurrency)
                 for query in dataset.get_next_n_queries(concurrency):
                     dataset_q.put(query)
         time.sleep(0.1)
