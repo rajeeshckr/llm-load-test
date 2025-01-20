@@ -112,7 +112,7 @@ def create_procs(mp_ctx, dataset_q, stop_q, plugin, logger_q, log_level, duratio
 
         proc = mp_ctx.Process(target=user.run_user_process)
         procs.append(proc)
-        logging.info("Starting %s", proc)
+        logging.debug("Starting %s", proc)
         proc.start()
         results_pipes.append(recv_results)
 

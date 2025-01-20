@@ -144,7 +144,7 @@ def write_output(config, results_list, concurrency, duration):
 
     error_count = len(df[~df["error_text"].isnull()])
     req_count = len(df)
-    print(f"Error count: {error_count} of {req_count} total requests")
+    print(f"Error count: {error_count} of {req_count} total requests with concurrency {concurrency} for duration {duration} seconds")
 
     # Ignore errors for summary results
     df = df[df["error_text"].isnull()]

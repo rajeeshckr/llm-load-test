@@ -44,7 +44,7 @@ class User:
             self.logger.warn("dataset q does not exist!")
             return None
 
-        self.logger.info("User %s making request", self.user_id)
+        self.logger.debug("User %s making request", self.user_id)
         result = self.plugin.request_func(query, self.user_id, test_end_time)
         return result
 
