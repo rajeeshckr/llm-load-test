@@ -160,6 +160,9 @@ def main(args):
 
         stop_procs(procs, dataset_q, stop_q)
 
+        logging.info("Test completed successfully")
+        time.sleep(3600)
+
     # Terminate queues immediately on ^C
     except KeyboardInterrupt:
         stop_q.cancel_join_thread()
@@ -173,7 +176,6 @@ def main(args):
         stop_test(logger_q, log_reader_thread, 1)
 
     stop_test(logger_q, log_reader_thread, 0)
-    time.sleep(3600)
 
 
 if __name__ == "__main__":
