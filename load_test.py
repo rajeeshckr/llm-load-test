@@ -173,6 +173,7 @@ def main(args):
         stop_test(logger_q, log_reader_thread, 1)
 
     stop_test(logger_q, log_reader_thread, 0)
+    time.sleep(3600)
 
 
 if __name__ == "__main__":
