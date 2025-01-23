@@ -188,6 +188,7 @@ def write_output(config, results_list, concurrency, duration):
 
     throughput = df["output_tokens_before_timeout"].sum() / duration
     output_obj["summary"]["throughput_full_duration"] = throughput_full_duration
+    output_obj["summary"]["throughput_requests_per_second"] = throughput_requests_per_second
     output_obj["summary"]["full_duration"] = full_duration
     output_obj["summary"]["throughput"] = throughput
     output_obj["summary"]["total_requests"] = req_count
